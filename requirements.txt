@@ -3,3 +3,5 @@ uvicorn[standard]
 gunicorn
 uvicorn-worker
 python-multipart
+numpy
+opencv-python-headless
