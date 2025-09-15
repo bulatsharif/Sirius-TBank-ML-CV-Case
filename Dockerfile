@@ -6,7 +6,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 RUN apt-get update && apt-get install -y --no-install-recommends build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-RUN python -m venv &VENV_PATH
+RUN python -m venv $VENV_PATH
 ENV PATH="$VENV_PATH/bin:$PATH"
 WORKDIR /tmp
 COPY requirements.txt .
