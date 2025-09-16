@@ -4,13 +4,10 @@ from typing import List
 
 MIN_MATCH_COUNT = 10
 TBANK_LOGO_PATH = "app/models/tbank_logo.png"
-TINKOFF_LOGO_PATH = "app/models/tinkoff_logo.png"
-TINKOFF_NAME_PATH = "app/models/tinkoff_logo_name.png"
+
 
 # Pre-load logo templates
 TBANK_LOGO = cv2.imread(TBANK_LOGO_PATH, cv2.IMREAD_GRAYSCALE)
-TINKOFF_LOGO = cv2.imread(TINKOFF_LOGO_PATH, cv2.IMREAD_GRAYSCALE)
-TINKOFF_NAME = cv2.imread(TINKOFF_NAME_PATH, cv2.IMREAD_GRAYSCALE)
 
 
 def detect_image_on_another_SIFT_RANSAC(query_image: np.ndarray, search_image: np.ndarray) -> List[List[float]]:
@@ -107,10 +104,8 @@ def detect_logo_SIFT_RANSAC(image: np.ndarray) -> List[List[float]]:
         return None
 
     bboxes_tbank = detect_image_on_another_SIFT_RANSAC(TBANK_LOGO, image)
-    bboxes_tinkoff_logo = detect_image_on_another_SIFT_RANSAC(TINKOFF_LOGO, image)
-    bboxes_tinkoff_name = detect_image_on_another_SIFT_RANSAC(TINKOFF_NAME, image)
 
-    if bboxes_tbank and not bboxes_tinkoff_logo and not bboxes_tinkoff_name:
+    if bboxes_tbank:
         return bboxes_tbank
     else:
         return None
