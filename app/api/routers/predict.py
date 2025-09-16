@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from fastapi import APIRouter, HTTPException, File, UploadFile
 from app.schemas.predict import DetectionResponse, ErrorResponse, Detection, BoundingBox
-from app.models.model import detect_logo_SIFT_RANSAC
+from app.models.detect_YOLO import detect_logo_YOLO
 
 router = APIRouter()
 
@@ -22,32 +22,29 @@ async def detect_logo(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="File is empty")
 
     nparr = np.frombuffer(content, np.uint8)
-    image = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
+    image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
     if image is None:
         raise HTTPException(status_code=400, detail="Invalid image format")
 
-    height, width = image.shape
+    # image has shape (height, width, channels); height/width not used below
 
     try:
-        bboxes = detect_logo_SIFT_RANSAC(image)
+        bboxes = detect_logo_YOLO(image)
+        detections = []
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error processing image: {e}")
 
     if not bboxes:
         return DetectionResponse(detections=[])
 
-    x_coords = [p[0] for p in bboxes]
-    y_coords = [p[1] for p in bboxes]
+    for bbox in bboxes:
+        x_min = int(min(bbox[0], bbox[2]))
+        y_min = int(min(bbox[1], bbox[3]))
+        x_max = int(max(bbox[0], bbox[2]))
+        y_max = int(max(bbox[1], bbox[3]))
 
-    x_min = int(max(0, min(x_coords)))
-    y_min = int(max(0, min(y_coords)))
-    x_max = int(min(width, max(x_coords)))
-    y_max = int(min(height, max(y_coords)))
+        detections.append(Detection(bbox=BoundingBox(x_min=x_min, y_min=y_min, x_max=x_max, y_max=y_max)))
 
-    response = DetectionResponse(
-        detections=[
-            Detection(bbox=BoundingBox(x_min=x_min, y_min=y_min, x_max=x_max, y_max=y_max))
-        ]
-    )
+    response = DetectionResponse(detections=detections)
     return response

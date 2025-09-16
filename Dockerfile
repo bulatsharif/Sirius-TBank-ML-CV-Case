@@ -15,6 +15,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     VENV_PATH=/opt/venv \
     PATH="/opt/venv/bin:$PATH"
 
+RUN apt-get update && apt-get install -y --no-install-recommends libgl1 libglib2.0-0 && rm -rf /var/lib/apt/lists/*
+
 RUN useradd -m -u 10001 -s /usr/sbin/nologin appuser
 WORKDIR /app
 

@@ -2,7 +2,7 @@ import streamlit as st
 import cv2
 import numpy as np
 from PIL import Image
-from app.models.model import detect_logo_SIFT_RANSAC, TBANK_LOGO
+from app.models.detect_YOLO import detect_logo_YOLO
 
 st.title("Детекция логотипа Т-банка")
 
@@ -16,17 +16,28 @@ if uploaded_file is not None:
 
     st.write("Детекция логотипа...")
     
-    gray_image = cv2.cvtColor(opencv_image, cv2.COLOR_BGR2GRAY)
+    gray_image = cv2.cvtColor(opencv_image, cv2.COLOR_BGR2RGB)
     
-    bboxes = detect_logo_SIFT_RANSAC(gray_image)
+    bboxes = detect_logo_YOLO(gray_image)
     
-
+    
     if bboxes:
-        st.write("Логотип найден!")
+        img_with_box = opencv_image.copy()
         
-        pts = np.array(bboxes, np.int32)
-        pts = pts.reshape((-1, 1, 2))
-        img_with_box = cv2.polylines(opencv_image.copy(), [pts], isClosed=True, color=(0, 255, 0), thickness=3)
+        st.write("Логотип найден!")
+        for bbox in bboxes:
+            x_min = min(bbox[0], bbox[2])
+            y_min = min(bbox[1], bbox[3])
+            x_max = max(bbox[0], bbox[2])
+            y_max = max(bbox[1], bbox[3])
+
+            p1 = (x_min, y_min)
+            p2 = (x_max, y_max)
+            p3 = (x_max, y_min)
+            p4 = (x_min, y_max)
+            pts = np.array([p1, p3, p2, p4], np.int32)
+            pts = pts.reshape((-1, 1, 2))
+            img_with_box = cv2.polylines(img_with_box, [pts], isClosed=True, color=(0, 255, 0), thickness=3)
 
         st.image(img_with_box, channels="BGR", caption="Обработанное изображение")
     else:
