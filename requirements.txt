@@ -5,3 +5,5 @@ uvicorn-worker
 python-multipart
 numpy
 opencv-python-headless
+streamlit
+Pillow
