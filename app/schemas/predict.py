@@ -17,6 +17,6 @@ class DetectionResponse(BaseModel):
     detections: List[Detection] = Field(..., description="Список найденных логотипов") 
     
 class ErrorResponse(BaseModel):
-    """"Ответ при ошибке"""
+    """Ответ при ошибке"""
     error: str = Field(..., description="Описание ошибки")
     detail: Optional[str] = Field(None, description="Дополнительная информация")

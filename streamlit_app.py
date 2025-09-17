@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 from PIL import Image
 from app.models.detect_YOLO import detect_logo_YOLO
+import time
 
 st.title("Детекция логотипа Т-банка")
 
@@ -18,8 +19,11 @@ if uploaded_file is not None:
             st.image(opencv_image, channels="BGR", caption="Загруженное изображение")
             st.write("Детекция логотипа...")
             try:
-                rgb_image = cv2.cvtColor(opencv_image, cv2.COLOR_BGR2RGB)
-                bboxes = detect_logo_YOLO(rgb_image)
+                # Keep BGR consistently (same as API)
+                start_time = time.perf_counter()
+                bboxes = detect_logo_YOLO(opencv_image)
+                end_time = time.perf_counter()
+                elapsed_ms = (end_time - start_time) * 1000.0
             except Exception:
                 st.error("Сбой детекции. Попробуйте другое изображение или перезагрузите приложение.")
                 bboxes = []
@@ -32,6 +36,7 @@ if uploaded_file is not None:
                     y_min = min(bbox[1], bbox[3])
                     x_max = max(bbox[0], bbox[2])
                     y_max = max(bbox[1], bbox[3])
+                    x_min, y_min, x_max, y_max = map(int, [x_min, y_min, x_max, y_max])
                     p1 = (x_min, y_min)
                     p2 = (x_max, y_max)
                     p3 = (x_max, y_min)
@@ -40,6 +45,7 @@ if uploaded_file is not None:
                     pts = pts.reshape((-1, 1, 2))
                     img_with_box = cv2.polylines(img_with_box, [pts], isClosed=True, color=(0, 255, 0), thickness=3)
                 st.image(img_with_box, channels="BGR", caption="Обработанное изображение")
+                st.caption(f"Время инференса: {elapsed_ms:.1f} мс")
             else:
                 st.write("Логотип не найден.")
     except Exception:

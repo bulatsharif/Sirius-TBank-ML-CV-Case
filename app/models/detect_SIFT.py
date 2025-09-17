@@ -2,11 +2,19 @@ import numpy as np
 import cv2
 from typing import List
 
+"""
+В этом файле реализован метод детекции логотипа Т-Банка на основе SIFT + RANSAC
+Этот метод использовался в первых версиях приложения, до тренировки YOLO,
+а также использовался для разметки тренировочного датасета; После файнтюна YOLO,
+этот модуль не используется
+
+Внутри функции я оставлял комментарии, объясняющие, как работает метод;
+"""
+
 MIN_MATCH_COUNT = 4
 TBANK_LOGO_PATH = "app/models/tbank_logo.png"
 
 
-# Pre-load logo templates
 TBANK_LOGO = cv2.imread(TBANK_LOGO_PATH, cv2.IMREAD_GRAYSCALE)
 
 
@@ -127,8 +135,6 @@ def detect_image_on_another_SIFT_RANSAC(query_image: np.ndarray, search_image: n
         
         
         area_region_rectangle = (x_max - x_min) * (y_max - y_min)
-        # print(area_region_result, area_region_rectangle)  
-        # print(height * width)
 
         if area_region_rectangle == 0:
             return None
@@ -138,8 +144,6 @@ def detect_image_on_another_SIFT_RANSAC(query_image: np.ndarray, search_image: n
         
       return bboxes
   else:
-    # If we don't have enough high-quality matches, homography estimation would
-    # be unstable. Report how many we had versus the minimum required.
     return None
 
 def detect_logo_SIFT_RANSAC(image: np.ndarray) -> List[List[float]]:

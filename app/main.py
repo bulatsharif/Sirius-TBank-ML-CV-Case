@@ -5,10 +5,20 @@ from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 import logging
 from app.api.routers import predict
 from app.schemas.predict import ErrorResponse
+from contextlib import asynccontextmanager
+from app.models.detect_YOLO import _get_model
 
-app = FastAPI(title="Sirius x T-Bank Computer Vision Case")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        _ = _get_model()
+    except Exception:
+        # Модель может не загрузиться;
+        pass
+    yield
 
-# Basic logging configuration
+app = FastAPI(title="Sirius x T-Bank Computer Vision Case", lifespan=lifespan)
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 

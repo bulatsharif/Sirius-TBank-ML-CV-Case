@@ -24,4 +24,4 @@ COPY --from=builder /opt/venv /opt/venv
 COPY --chown=appuser:appuser app ./app
 EXPOSE 8000
 USER appuser
-CMD ["gunicorn", "-k", "uvicorn_worker.UvicornWorker", "-w", "4", "-b", "0.0.0.0:8000", "app.main:app"]
+CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-w", "1", "-b", "0.0.0.0:8000", "app.main:app"]
