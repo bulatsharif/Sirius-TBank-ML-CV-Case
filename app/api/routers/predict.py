@@ -1,12 +1,24 @@
 import cv2
 import numpy as np
+import logging
 from fastapi import APIRouter, HTTPException, File, UploadFile
 from app.schemas.predict import DetectionResponse, ErrorResponse, Detection, BoundingBox
 from app.models.detect_YOLO import detect_logo_YOLO
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
-@router.post("/detect", response_model=DetectionResponse, responses={400: {"model": ErrorResponse}})
+@router.post(
+    "/detect",
+    response_model=DetectionResponse,
+    responses={
+        400: {"model": ErrorResponse},
+        415: {"model": ErrorResponse},
+        422: {"model": ErrorResponse},
+        500: {"model": ErrorResponse},
+        503: {"model": ErrorResponse},
+    },
+)
 async def detect_logo(file: UploadFile = File(...)):
     """
     Детекция логотипа Т-банка на изображении
@@ -17,6 +29,10 @@ async def detect_logo(file: UploadFile = File(...)):
     Returns:
         DetectionResponse: Результаты детекции с координатами найденных логотипов
     """
+    allowed_types = {"image/jpeg", "image/png", "image/webp", "image/bmp"}
+    if file.content_type not in allowed_types:
+        raise HTTPException(status_code=415, detail="Unsupported media type")
+
     content = await file.read()
     if not content:
         raise HTTPException(status_code=400, detail="File is empty")
@@ -32,8 +48,15 @@ async def detect_logo(file: UploadFile = File(...)):
     try:
         bboxes = detect_logo_YOLO(image)
         detections = []
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Error processing image: {e}")
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except RuntimeError as e:
+        # Likely model loading or availability problem
+        logger.error("Model unavailable: %s", e)
+        raise HTTPException(status_code=503, detail="Model unavailable. Try later.")
+    except Exception:
+        logger.exception("Detection failed")
+        raise HTTPException(status_code=500, detail="Detection failed")
 
     if not bboxes:
         return DetectionResponse(detections=[])
