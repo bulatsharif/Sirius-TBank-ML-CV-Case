@@ -93,13 +93,11 @@ Kaggle‑ноутбуки (все версии):
 1. Docker Compose (обычный запуск)
 
 ```bash
-cp .env.example .env
 docker compose up --build
 ```
 
 2. Для разработки (автоматический reload)
 ```bash
-cp .env.example .env
 docker compose -f compose.dev.yaml up --build
 ```
 
