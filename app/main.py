@@ -23,6 +23,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app.include_router(predict.router, prefix="/api/v1", tags=["detection"])
+app.include_router(predict.router, tags=["detection"])
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
